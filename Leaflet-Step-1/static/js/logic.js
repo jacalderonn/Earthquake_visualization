@@ -1,20 +1,19 @@
 // earthquake data url
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
-// get earthquake data:
+// getting data
 d3.json(queryUrl, function(data){
-   var quakeFeatures = data.features
-   console.log(quakeFeatures)
-    // earthquakes circle markers 
-   var earthquakes = L.geoJSON(quakeFeatures, {
+   var values = data.features
+   console.log(values)
+    // Making circles
+   var earthquakes = L.geoJSON(values, {
     pointToLayer: function (feature, latlng) {
-      return new L.circle(latlng, 
-          {radius: getRadius(feature.properties.mag),
+      return L.circle(latlng, {
+          radius: getRadius(feature.properties.mag),
           fillColor: getColor(feature.properties.mag),
-          fillOpacity: .75,
-          color: "white",
-          weight: 1
-
+          fillOpacity: 0.6,
+          color: "black",
+          weight: 0.3
       })
     },
     onEachFeature: function (feature, layer){
@@ -41,20 +40,12 @@ function getColor(d) {
     }
 } 
 
-// function to get the radius for circle markers
+// Radius of circles
 function getRadius(value){
     return value*60000
 }
-// Define streetmap
-var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?" +
-"access_token=pk.eyJ1Ijoid2Vpc3VpIiwiYSI6ImNqaDFhaHF1OTAwdGEyeXFoeDAyamczZW0ifQ.TAcEPXoBGJM1lS1eL7teYw");
-// satelliteMap: has to insert id
-var satelliteMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-  id: 'mapbox.satellite',
-  accessToken: 'pk.eyJ1Ijoid2Vpc3VpIiwiYSI6ImNqaDFhaHF1OTAwdGEyeXFoeDAyamczZW0ifQ.TAcEPXoBGJM1lS1eL7teYw'
-});
 
-// light map
+// Layer map
 var light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
     attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
     maxZoom: 18,
@@ -64,44 +55,28 @@ var light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/
 
 function createMap(earthquake){
    var baseMaps = {
-    "Outdoor Map": streetmap,
-    "Grayscale Map": light,
-    "Satelite Map": satelliteMap
+    "Grayscale": light
 };
 
-var overlayMaps = {
-    "Earthquakes": earthquake    
-  };
-// create mymap
-  var mymap = L.map('map', {
-    // center: [40.7128, -74.0060], //nyc coordinate
-    maxzoom: 0,
-    minZoom: 0,
-    layers: [light, earthquake],
-    scrollWheelZoom: false  //diable scroll and zoom in the map
-  }); 
-  mymap.setView([40.7128, -74.0060], 3); //nyc coordinates, zoom level 3
+var mymap = L.map("map", {
+  center: [37.09, -95.71],
+  zoom: 3,
+  layers: [light, earthquake]
+});
 
-// create legend for circle marker colors
-  var legend = L.control({position: 'bottomright'});
+// Creating legend
+var legend = L.control({position: 'bottomright'});
 
-  legend.onAdd = function (mymap) {
-
+legend.onAdd = function (mymap) {
     var div = L.DomUtil.create('div', 'info legend'),
-        grades = [0, 1, 2, 3, 4, 5],   
-        labels = [];
+        interval = [0, 1, 2, 3, 4, 5];
 
-    // loop through our density intervals and generate a label with a colored square for each interval
-    for (var i = 0; i < grades.length; i++) {
+    for (var i = 0; i < interval.length; i++) {
         div.innerHTML +=
-            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            '<i style="background:' + getColor(interval[i] + 1) + '"></i> ' +
+            interval[i] + (interval[i + 1] ? '&ndash;' + interval[i + 1] + '<br>' : '+');
     }
-
   return div;
 };
-
 legend.addTo(mymap);
-
-L.control.layers(baseMaps, overlayMaps).addTo(mymap);
 }
