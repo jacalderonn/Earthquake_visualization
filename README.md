@@ -11,3 +11,5 @@ Using data from [USGS](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson
 * Mapbox
 
 <img src = "map.png" width = 800>
+
+<img src = "map2.png" width = 800>
